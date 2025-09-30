@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:safe_list/pages/license_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('LicenseScreen Tests', () {
     setUp(() {
+      SharedPreferences.setMockInitialValues({});
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, null);
     });
@@ -39,8 +41,7 @@ void main() {
       }
 
       await tester.pumpWidget(app);
-      await tester.idle();
-      await tester.pump();
+      await tester.pumpAndSettle();
     }
 
     testWidgets('should display initial UI elements', (WidgetTester tester) async {
@@ -71,12 +72,11 @@ void main() {
       await setupWidget(tester, withRoutes: true);
 
       await tester.tap(find.byType(GestureDetector));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Licença colada com sucesso!'), findsOneWidget);
       expect(find.text('Licença: $testLicense'), findsOneWidget);
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
-
       await tester.pump(const Duration(seconds: 2));
     });
 
@@ -93,13 +93,15 @@ void main() {
         },
       );
 
-      await setupWidget(tester);
+      await setupWidget(tester, withRoutes: true);
 
       await tester.tap(find.byType(GestureDetector));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Nenhuma licença encontrada na área de transferência'),
           findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 2));
     });
 
     testWidgets('should truncate long license preview', (WidgetTester tester) async {
@@ -119,7 +121,7 @@ void main() {
       await setupWidget(tester, withRoutes: true);
 
       await tester.tap(find.byType(GestureDetector));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.textContaining('Licença:'), findsOneWidget);
       expect(find.textContaining('...'), findsOneWidget);
@@ -150,7 +152,8 @@ void main() {
       );
 
       await tester.tap(find.byType(GestureDetector));
-      await tester.pump();
+      await tester.pumpAndSettle();
+
       await tester.pump(const Duration(seconds: 2));
 
       expect(navigationCalled, isTrue);
@@ -179,11 +182,31 @@ void main() {
       await setupWidget(tester);
 
       await tester.tap(find.byType(GestureDetector));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Nenhuma licença encontrada na área de transferência'),
           findsOneWidget);
       expect(find.byIcon(Icons.check_circle), findsNothing);
+    });
+
+    testWidgets('should navigate to todo list if license is already saved',
+        (WidgetTester tester) async {
+      const testLicense = 'EXISTING-LICENSE';
+      bool navigationCalled = false;
+      SharedPreferences.setMockInitialValues({
+        'license': testLicense,
+      });
+
+      await setupWidget(
+        tester,
+        onNavigate: () => navigationCalled = true,
+      );
+
+      await tester.pumpAndSettle();
+
+      await tester.pump(const Duration(seconds: 2));
+
+      expect(navigationCalled, isTrue);
     });
   });
 }
