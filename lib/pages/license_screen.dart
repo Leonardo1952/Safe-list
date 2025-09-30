@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LicenseScreen extends StatefulWidget {
   const LicenseScreen({super.key});
@@ -10,6 +11,7 @@ class LicenseScreen extends StatefulWidget {
 
 class _LicenseScreenState extends State<LicenseScreen> {
   String? _license;
+  late SharedPreferences _sharedPreferences;
 
   static const _appBarTitle = 'Safe List';
   static const _mainTitle = 'Toque na tela para colar sua licença';
@@ -22,6 +24,24 @@ class _LicenseScreenState extends State<LicenseScreen> {
   static const _snackBarDuration = Duration(seconds: 2);
   static const _navigationDelay = Duration(seconds: 1);
   static const _maxLicensePreviewLength = 20;
+  static const _licenseKey = 'license';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLicense();
+  }
+
+  Future<void> _loadLicense() async {
+    _sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      _license = _sharedPreferences.getString(_licenseKey);
+    });
+  }
+
+  Future<void> _saveLicense(String license) async {
+    await _sharedPreferences.setString(_licenseKey, license);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +74,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.1),
+        color: Colors.green.withAlpha(25),
         border: Border.all(color: Colors.green),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -121,8 +141,10 @@ class _LicenseScreenState extends State<LicenseScreen> {
     final clipboardData = await Clipboard.getData('text/plain');
 
     if (clipboardData?.text != null && clipboardData!.text!.isNotEmpty) {
+      final license = clipboardData.text!;
+      await _saveLicense(license);
       setState(() {
-        _license = clipboardData.text;
+        _license = license;
       });
       _showSnackBar(_successMessage);
       _navigateToTodoList();
