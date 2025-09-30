@@ -34,8 +34,18 @@ class _LicenseScreenState extends State<LicenseScreen> {
 
   Future<void> _loadLicense() async {
     _sharedPreferences = await SharedPreferences.getInstance();
+    final license = _sharedPreferences.getString(_licenseKey);
+
+    if (license != null && license.isNotEmpty) {
+      setState(() {
+        _license = license;
+      });
+      _navigateToTodoList();
+      return;
+    }
+
     setState(() {
-      _license = _sharedPreferences.getString(_licenseKey);
+      _license = null;
     });
   }
 
