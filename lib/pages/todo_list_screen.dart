@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:safe_list/database/database_helper.dart';
+import 'package:safe_list/models/todo.dart';
 
 class TodoListScreen extends StatefulWidget {
-
-
   const TodoListScreen({super.key});
 
   @override
@@ -10,20 +10,34 @@ class TodoListScreen extends StatefulWidget {
 }
 
 class _TodoListScreenState extends State<TodoListScreen> {
-  final List<TodoItem> _todoItems = [];
+  List<Todo> _todoItems = [];
   final TextEditingController _textController = TextEditingController();
 
   static const _appBarTitle = 'Minha Lista de Tarefas';
-  static const _emptyMessage = 'Nenhuma tarefa ainda.\nToque no + para adicionar!';
+  static const _emptyMessage =
+      'Nenhuma tarefa ainda.\nToque no + para adicionar!';
   static const _addTaskHint = 'Digite sua tarefa aqui...';
   static const _saveButtonText = 'Salvar';
   static const _cancelButtonText = 'Cancelar';
   static const _addTaskTitle = 'Nova Tarefa';
 
   @override
+  void initState() {
+    super.initState();
+    _refreshTodoList();
+  }
+
+  @override
   void dispose() {
     _textController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshTodoList() async {
+    final data = await DatabaseHelper.instance.getTodos();
+    setState(() {
+      _todoItems = data;
+    });
   }
 
   @override
@@ -56,21 +70,21 @@ class _TodoListScreenState extends State<TodoListScreen> {
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
             leading: Checkbox(
-              value: item.isCompleted,
-              onChanged: (value) => _toggleTodoItem(index),
+              value: item.isDone,
+              onChanged: (value) => _toggleTodoItem(item),
             ),
             title: Text(
-              item.text,
+              item.title,
               style: TextStyle(
-                decoration: item.isCompleted
+                decoration: item.isDone
                     ? TextDecoration.lineThrough
                     : TextDecoration.none,
-                color: item.isCompleted ? Colors.grey : null,
+                color: item.isDone ? Colors.grey : null,
               ),
             ),
             trailing: IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _removeTodoItem(index),
+              onPressed: () => _removeTodoItem(item.id!),
             ),
           ),
         );
@@ -135,48 +149,25 @@ class _TodoListScreenState extends State<TodoListScreen> {
     );
   }
 
-  void _saveTask() {
+  void _saveTask() async {
     final text = _textController.text.trim();
+    final navigator = Navigator.of(context);
 
     if (text.isNotEmpty) {
-      setState(() {
-        _todoItems.add(TodoItem(text: text));
-      });
-      Navigator.of(context).pop();
+      await DatabaseHelper.instance.add(Todo(title: text));
+      _refreshTodoList();
+      navigator.pop();
     }
   }
 
-  void _toggleTodoItem(int index) {
-    setState(() {
-      _todoItems[index] = _todoItems[index].copyWith(
-        isCompleted: !_todoItems[index].isCompleted,
-      );
-    });
+  void _toggleTodoItem(Todo item) async {
+    item.isDone = !item.isDone;
+    await DatabaseHelper.instance.update(item);
+    _refreshTodoList();
   }
 
-  void _removeTodoItem(int index) {
-    setState(() {
-      _todoItems.removeAt(index);
-    });
-  }
-}
-
-class TodoItem {
-  final String text;
-  final bool isCompleted;
-
-  const TodoItem({
-    required this.text,
-    this.isCompleted = false,
-  });
-
-  TodoItem copyWith({
-    String? text,
-    bool? isCompleted,
-  }) {
-    return TodoItem(
-      text: text ?? this.text,
-      isCompleted: isCompleted ?? this.isCompleted,
-    );
+  void _removeTodoItem(int id) async {
+    await DatabaseHelper.instance.delete(id);
+    _refreshTodoList();
   }
 }
