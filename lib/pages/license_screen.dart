@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:safe_list/utils/encryption_helper.dart';
 
 class LicenseScreen extends StatefulWidget {
   const LicenseScreen({super.key});
@@ -34,14 +35,20 @@ class _LicenseScreenState extends State<LicenseScreen> {
 
   Future<void> _loadLicense() async {
     _sharedPreferences = await SharedPreferences.getInstance();
-    final license = _sharedPreferences.getString(_licenseKey);
+    final encryptedLicense = _sharedPreferences.getString(_licenseKey);
 
-    if (license != null && license.isNotEmpty) {
-      setState(() {
-        _license = license;
-      });
-      _navigateToTodoList();
-      return;
+    if (encryptedLicense != null && encryptedLicense.isNotEmpty) {
+      print('License a ser descriptada: $encryptedLicense');
+      final decrypted = EncryptionHelper.decryptText(encryptedLicense);
+
+      if (decrypted != null && decrypted.isNotEmpty) {
+        print('License original depois de descriptar: $decrypted');
+        setState(() {
+          _license = decrypted;
+        });
+        _navigateToTodoList();
+        return;
+      }
     }
 
     setState(() {
@@ -50,7 +57,10 @@ class _LicenseScreenState extends State<LicenseScreen> {
   }
 
   Future<void> _saveLicense(String license) async {
-    await _sharedPreferences.setString(_licenseKey, license);
+    print('License original: $license');
+    final encrypted = EncryptionHelper.encryptText(license);
+    print('License depois de encriptar: $encrypted');
+    await _sharedPreferences.setString(_licenseKey, encrypted);
   }
 
   @override
