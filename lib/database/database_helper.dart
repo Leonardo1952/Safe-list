@@ -70,5 +70,6 @@ CREATE TABLE todos (
   Future close() async {
     final db = await instance.database;
     db.close();
+    _database = null;
   }
 }

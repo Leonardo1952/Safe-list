@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:safe_list/database/database_helper.dart';
 import 'package:safe_list/pages/todo_list_screen.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
   group('TodoListScreen Tests', () {
+    tearDown(() async {
+      await DatabaseHelper.instance.close();
+    });
+
     Future<void> setupWidget(WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: TodoListScreen()),
@@ -54,7 +62,7 @@ void main() {
       await setupWidget(tester);
 
       await tester.tap(find.byType(FloatingActionButton));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Salvar'));
       await tester.pump();
@@ -67,12 +75,12 @@ void main() {
       await setupWidget(tester);
 
       await tester.tap(find.byType(FloatingActionButton));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       const taskText = 'Minha primeira tarefa';
       await tester.enterText(find.byType(TextField), taskText);
       await tester.tap(find.text('Salvar'));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsNothing);
       expect(find.text(taskText), findsOneWidget);
