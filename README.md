@@ -1,16 +1,26 @@
-# safe_list
+# Safe List
 
-A new Flutter project.
+Safe List é uma aplicação Flutter criada como estudo sobre como proteger dados gravados localmente em apps móveis. Em muitos cenários, credenciais, licenças de uso e informações pessoais acabam sendo persistidas em `SharedPreferences` ou em bancos SQLite sem nenhum tipo de proteção, abrindo brecha para engenharia reversa ou acesso indevido. O projeto demonstra como adicionar uma camada de criptografia para mitigar esse risco.
 
-## Getting Started
+## Funcionalidades principais
 
-This project is a starting point for a Flutter application.
+- **Licenciamento protegido**: armazena uma chave de licença no `SharedPreferences`, criptografada com AES. Simula a necessidade de validar o acesso ao app sem expor o valor original.
+- **Lista de tarefas segura**: persiste ToDos em um banco SQLite utilizando criptografia, evitando que os títulos fiquem em texto puro.
 
-A few resources to get you started if this is your first Flutter project:
+## Tecnologias utilizadas
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Flutter (Dart)
+- sqflite_sqlcipher
+- encrypt
+- shared_preferences
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Como executar o projeto
+
+1. Clone o repositório: `git clone <URL-do-repo>`
+2. Entre na pasta: `cd safe_list`
+3. Instale as dependências: `flutter pub get`
+4. Execute a aplicação: `flutter run`
+
+## Objetivo educacional
+
+O foco do projeto é mostrar padrões básicos de criptografia em duas frentes comuns de armazenamento local (preferências e banco de dados). A interface foi mantida simples de propósito: o objetivo é facilitar a inspeção do código e a replicação das abordagens em outros projetos.
