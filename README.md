@@ -16,7 +16,7 @@ Safe List é uma aplicação Flutter criada como estudo sobre como proteger dado
 
 ## Como executar o projeto ▶️
 
-1. Clone o repositório: `git clone [<URL-do-repo>](https://github.com/Leonardo1952/safe_list)` 🚧
+1. Clone o repositório: `git clone https://github.com/Leonardo1952/safe_list` 🚧
 2. Entre na pasta: `cd safe_list` 📁
 3. Instale as dependências: `flutter pub get` 📦
 4. Execute a aplicação: `flutter run` ▶️
