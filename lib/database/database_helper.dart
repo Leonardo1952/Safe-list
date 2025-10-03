@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:path/path.dart';
+import 'package:safe_list/utils/encryption_helper.dart';
 import '../models/todo.dart';
 
 class DatabaseHelper {
@@ -38,21 +39,23 @@ CREATE TABLE todos (
 
   Future<Todo> add(Todo todo) async {
     final db = await instance.database;
-    final id = await db.insert('todos', todo.toMap());
+    final id = await db.insert('todos', _encryptTodoMap(todo.toMap()));
     return todo..id = id;
   }
 
   Future<List<Todo>> getTodos() async {
     final db = await instance.database;
     final result = await db.query('todos', orderBy: 'id DESC');
-    return result.map((json) => Todo.fromMap(json)).toList();
+    return result
+        .map((json) => Todo.fromMap(_decryptTodoMap(json)))
+        .toList();
   }
 
   Future<int> update(Todo todo) async {
     final db = await instance.database;
     return db.update(
       'todos',
-      todo.toMap(),
+      _encryptTodoMap(todo.toMap()),
       where: 'id = ?',
       whereArgs: [todo.id],
     );
@@ -71,5 +74,30 @@ CREATE TABLE todos (
     final db = await instance.database;
     db.close();
     _database = null;
+  }
+
+  Map<String, dynamic> _encryptTodoMap(Map<String, dynamic> map) {
+    final copy = Map<String, dynamic>.from(map);
+    final title = copy['title'];
+    if (title is String) {
+      print('Todo original: $title');
+      final encryptedTitle = EncryptionHelper.encryptText(title);
+      print('Todo depois de encriptar: $encryptedTitle');
+      copy['title'] = encryptedTitle;
+    }
+    return copy;
+  }
+
+  Map<String, dynamic> _decryptTodoMap(Map<String, dynamic> map) {
+    final copy = Map<String, dynamic>.from(map);
+    final encryptedTitle = copy['title'];
+    if (encryptedTitle is String) {
+      print('Todo a ser descriptado: $encryptedTitle');
+      final decrypted = EncryptionHelper.decryptText(encryptedTitle);
+      final titleToUse = decrypted ?? encryptedTitle;
+      print('Todo original depois de descriptar: $titleToUse');
+      copy['title'] = titleToUse;
+    }
+    return copy;
   }
 }
