@@ -2,6 +2,9 @@
 
 Safe List é uma aplicação Flutter criada como estudo sobre como proteger dados gravados localmente em apps móveis. Em muitos cenários, credenciais, licenças de uso e informações pessoais acabam sendo persistidas em `SharedPreferences` ou em bancos SQLite sem nenhum tipo de proteção, abrindo brecha para engenharia reversa ou acesso indevido. O projeto demonstra como adicionar uma camada de criptografia para mitigar esse risco. 🔒
 
+<img width="1536" height="1024" alt="image_flutter" src="https://github.com/user-attachments/assets/0e1d0b53-008a-44f9-805c-14934e5307c8" />
+
+
 ## Funcionalidades principais ✨
 
 - **Licenciamento protegido**: armazena uma chave de licença no `SharedPreferences`, criptografada com AES. Simula a necessidade de validar o acesso ao app sem expor o valor original. 🔑
